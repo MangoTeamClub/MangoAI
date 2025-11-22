@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MangoAI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            width: 100%;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px 0;
+            margin-bottom: 20px;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+        
+        .logo-icon {
+            color: #FFC800;
+            font-size: 28px;
+        }
+        
+        h1 {
+            color: #FFC800;
+            font-size: 32px;
+            font-weight: 700;
+        }
+        
+        .tagline {
+            color: #666;
+            font-size: 16px;
+            margin-top: 5px;
+        }
+        
+        .chat-container {
+            flex: 1;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        
+        .messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .message {
+            max-width: 80%;
+            padding: 16px 20px;
+            border-radius: 18px;
+            line-height: 1.5;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .user-message {
+            align-self: flex-end;
+            background: #FFC800;
+            color: white;
+            border-bottom-right-radius: 6px;
+        }
+        
+        .ai-message {
+            align-self: flex-start;
+            background: #f0f2f5;
+            color: #333;
+            border-bottom-left-radius: 6px;
+        }
+        
+        .input-area {
+            padding: 20px;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 12px;
+        }
+        
+        .input-area input {
+            flex: 1;
+            padding: 16px 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 24px;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s;
+        }
+        
+        .input-area input:focus {
+            border-color: #FFC800;
+            box-shadow: 0 0 0 2px rgba(255, 200, 0, 0.2);
+        }
+        
+        .send-btn {
+            background: #FFC800;
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 18px;
+        }
+        
+        .send-btn:hover {
+            background: #e6b400;
+            transform: scale(1.05);
+        }
+        
+        .send-btn:active {
+            transform: scale(0.95);
+        }
+        
+        .typing-indicator {
+            display: none;
+            align-self: flex-start;
+            background: #f0f2f5;
+            color: #666;
+            padding: 16px 20px;
+            border-radius: 18px;
+            border-bottom-left-radius: 6px;
+            margin-bottom: 10px;
+        }
+        
+        .typing-dots {
+            display: flex;
+            gap: 4px;
+        }
+        
+        .typing-dots span {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #999;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+        
+        .typing-dots span:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dots span:nth-child(2) { animation-delay: -0.16s; }
+        
+        @keyframes typing {
+            0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px 0;
+            color: #666;
+            font-size: 14px;
+            border-top: 1px solid #eee;
+            margin-top: auto;
+        }
+        
+        .footer-content {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px;
+            }
+            
+            h1 {
+                font-size: 26px;
+            }
+            
+            .message {
+                max-width: 90%;
+            }
+            
+            .input-area {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-robot logo-icon"></i>
+                <h1>MangoAI</h1>
+            </div>
+        </header>
+        
+        <div class="chat-container">
+            <div class="messages" id="messages">
+                <div class="message ai-message">
+                    您好！我是MangoAI，您的智能对话助手。有什么我可以帮助您的吗？
+                </div>
+            </div>
+            
+            <div class="typing-indicator" id="typingIndicator">
+                <div class="typing-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+            
+            <div class="input-area">
+                <input type="text" id="userInput" placeholder="输入您的问题..." autocomplete="off">
+                <button class="send-btn" id="sendBtn">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+        
+        <footer>
+            <div class="footer-content">
+                <p>模型来自网络 | © 2022-2025 Mango 保留所有权利 © 2022-2025 Mango. All Rights Reserved.</p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const messagesContainer = document.getElementById('messages');
+            const userInput = document.getElementById('userInput');
+            const sendBtn = document.getElementById('sendBtn');
+            const typingIndicator = document.getElementById('typingIndicator');
+            
+            // 添加用户消息到聊天界面
+            function addUserMessage(message) {
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('message', 'user-message');
+                messageElement.textContent = message;
+                messagesContainer.appendChild(messageElement);
+                scrollToBottom();
+            }
+            
+            // 添加AI消息到聊天界面
+            function addAiMessage(message) {
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('message', 'ai-message');
+                messageElement.textContent = message;
+                messagesContainer.appendChild(messageElement);
+                scrollToBottom();
+            }
+            
+            // 滚动到底部
+            function scrollToBottom() {
+                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            }
+            
+            // 显示输入指示器
+            function showTypingIndicator() {
+                typingIndicator.style.display = 'block';
+                scrollToBottom();
+            }
+            
+            // 隐藏输入指示器
+            function hideTypingIndicator() {
+                typingIndicator.style.display = 'none';
+            }
+            
+            // 发送消息到API
+            async function sendMessageToAPI(message) {
+                const apiUrl = 'https://api.jkyai.top/API/depsek3.1.php';
+                
+                try {
+                    // 尝试使用POST请求
+                    const formData = new FormData();
+                    formData.append('question', message);
+                    
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('网络响应不正常');
+                    }
+                    
+                    const responseText = await response.text();
+                    return responseText;
+                } catch (error) {
+                    console.error('API请求错误:', error);
+                    
+                    // 如果POST失败，尝试GET请求
+                    try {
+                        const getUrl = `${apiUrl}?question=${encodeURIComponent(message)}`;
+                        const response = await fetch(getUrl);
+                        
+                        if (!response.ok) {
+                            throw new Error('GET请求也失败了');
+                        }
+                        
+                        const responseText = await response.text();
+                        return responseText;
+                    } catch (getError) {
+                        console.error('GET请求错误:', getError);
+                        return '抱歉，我现在无法处理您的请求，请稍后再试。';
+                    }
+                }
+            }
+            
+            // 处理发送消息
+            async function handleSendMessage() {
+                const message = userInput.value.trim();
+                
+                if (message === '') return;
+                
+                // 添加用户消息到界面
+                addUserMessage(message);
+                
+                // 清空输入框
+                userInput.value = '';
+                
+                // 显示输入指示器
+                showTypingIndicator();
+                
+                try {
+                    // 发送到API并获取响应
+                    const response = await sendMessageToAPI(message);
+                    
+                    // 隐藏输入指示器
+                    hideTypingIndicator();
+                    
+                    // 添加AI响应到界面
+                    addAiMessage(response);
+                } catch (error) {
+                    // 隐藏输入指示器
+                    hideTypingIndicator();
+                    
+                    // 显示错误消息
+                    addAiMessage('抱歉，发生了错误，请稍后再试。');
+                    console.error('处理消息时出错:', error);
+                }
+            }
+            
+            // 发送按钮点击事件
+            sendBtn.addEventListener('click', handleSendMessage);
+            
+            // 输入框回车事件
+            userInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    handleSendMessage();
+                }
+            });
+            
+            // 初始聚焦到输入框
+            userInput.focus();
+        });
+    </script>
+</body>
+</html>
